@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  glossary-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/data:/app/data
+    environment:
+      - GLOSSARY_DB=/app/data/glossary.db

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Glossary MindMap</title>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"
+    ></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      #network {
+        width: 100%;
+        height: 85vh;
+        border: 1px solid #ddd;
+      }
+      #controls {
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <button id="reload">Обновить граф</button>
+    </div>
+    <div id="network"></div>
+    <script>
+      async function loadGraph() {
+        const res = await fetch("/api/graph");
+        const data = await res.json();
+        const nodes = new vis.DataSet(data.nodes);
+        const edges = new vis.DataSet(data.edges);
+        const container = document.getElementById("network");
+        const network = new vis.Network(container, { nodes, edges }, {});
+        network.on("doubleClick", function (params) {
+          if (params.nodes.length) {
+            const id = params.nodes[0];
+            fetch(`/api/terms/${id}`)
+              .then((r) => r.json())
+              .then((d) =>
+                alert(
+                  `${d.term}\n\n${d.definition}\n\nSources: ${d.sources.join(
+                    ", "
+                  )}`
+                )
+              );
+          }
+        });
+      }
+      document.getElementById("reload").addEventListener("click", loadGraph);
+      loadGraph();
+    </script>
+  </body>
+</html>

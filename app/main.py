@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import FileResponse
 from sqlmodel import Session, select
 from typing import List
 from .database import init_db, get_session
@@ -63,6 +64,10 @@ def api_graph(session: Session = Depends(get_session)):
             if session.get(Term, rid):
                 edges.append({"from": t.id, "to": rid})
     return {"nodes": nodes, "edges": edges}
+
+@app.get("/term/{term_id}", include_in_schema=False)
+def serve_term_page(term_id: int):
+    return FileResponse(os.path.join(static_dir, "term.html"))
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

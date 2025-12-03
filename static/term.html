@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Термин — Глоссарий</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px auto;
+        max-width: 800px;
+        line-height: 1.6;
+        color: #333;
+      }
+
+      .card {
+        padding: 24px;
+        border-radius: 16px;
+        background: #f9f9f9;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      a {
+        color: #0066cc;
+      }
+
+      .back {
+        margin-bottom: 20px;
+        display: inline-block;
+      }
+
+      .related a {
+        display: inline-block;
+        margin-right: 10px;
+        background: #eef3ff;
+        padding: 6px 12px;
+        border-radius: 12px;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="back" href="/static/index.html">← Назад к графу</a>
+
+    <div class="card">
+      <h1 id="title"></h1>
+      <p id="definition"></p>
+
+      <h3>Связанные термины</h3>
+      <div id="related" class="related"></div>
+
+      <h3>Источники</h3>
+      <ul id="sources"></ul>
+    </div>
+
+    <script>
+      const id = window.location.pathname.split("/").pop();
+
+      fetch(`/api/terms/${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          document.getElementById("title").textContent = data.term;
+          document.getElementById("definition").textContent = data.definition;
+
+          const sources = JSON.parse(data.sources || "[]");
+          const ul = document.getElementById("sources");
+          sources.forEach((s) => {
+            const li = document.createElement("li");
+            li.innerHTML = `<a href="${s}" target="_blank">${s}</a>`;
+            ul.appendChild(li);
+          });
+
+          const related = JSON.parse(data.related_terms || "[]");
+          const rContainer = document.getElementById("related");
+          related.forEach((id) => {
+            const a = document.createElement("a");
+            a.href = `/term/${id}`;
+            a.textContent = `Термин #${id}`;
+            rContainer.appendChild(a);
+          });
+        });
+    </script>
+  </body>
+</html>

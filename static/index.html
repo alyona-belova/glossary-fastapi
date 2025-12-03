@@ -36,18 +36,10 @@
         const edges = new vis.DataSet(data.edges);
         const container = document.getElementById("network");
         const network = new vis.Network(container, { nodes, edges }, {});
-        network.on("doubleClick", function (params) {
-          if (params.nodes.length) {
+        network.on("click", function (params) {
+          if (params.nodes.length > 0) {
             const id = params.nodes[0];
-            fetch(`/api/terms/${id}`)
-              .then((r) => r.json())
-              .then((d) =>
-                alert(
-                  `${d.term}\n\n${d.definition}\n\nSources: ${d.sources.join(
-                    ", "
-                  )}`
-                )
-              );
+            window.location.href = `/term/${id}`;
           }
         });
       }

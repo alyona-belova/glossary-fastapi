@@ -90,10 +90,24 @@
           });
         });
 
+      let variant = localStorage.getItem("tooltip_variant");
+      if (!variant) {
+        variant = Math.random() < 0.5 ? "A" : "B";
+        localStorage.setItem("tooltip_variant", variant);
+      }
+
       fetch("/api/graph")
         .then((res) => res.json())
         .then((graph) => {
-          var nodes = new vis.DataSet(graph.nodes);
+          var nodesData = graph.nodes.map((n) => {
+            // Variant B: remove title to disable tooltip
+            if (variant === "B") {
+              return { ...n, title: undefined };
+            }
+            return n;
+          });
+
+          var nodes = new vis.DataSet(nodesData);
           var edges = new vis.DataSet(graph.edges);
 
           var container = document.getElementById("mynetwork");

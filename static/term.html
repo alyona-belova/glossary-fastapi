@@ -2,85 +2,126 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <title>Термин — Глоссарий</title>
+    <title>Термин</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        margin: 40px auto;
-        max-width: 800px;
-        line-height: 1.6;
-        color: #333;
+        margin: 0;
+        padding: 40px;
+        font-family: system-ui, sans-serif;
+        background: #f5f7ff;
       }
 
-      .card {
-        padding: 24px;
+      .container {
+        max-width: 800px;
+        margin: auto;
+        background: white;
         border-radius: 16px;
-        background: #f9f9f9;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        padding: 36px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
       }
 
       h1 {
-        margin-top: 0;
+        font-size: 30px;
+        margin-bottom: 15px;
       }
 
-      a {
-        color: #0066cc;
+      .definition {
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 25px;
+        color: #333;
       }
 
-      .back {
-        margin-bottom: 20px;
-        display: inline-block;
+      .section-title {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .sources,
+      .related {
+        padding-left: 18px;
+        margin-top: 8px;
       }
 
       .related a {
         display: inline-block;
-        margin-right: 10px;
-        background: #eef3ff;
-        padding: 6px 12px;
-        border-radius: 12px;
+        margin-right: 8px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        background: #eef1ff;
         text-decoration: none;
+        color: #3c57d0;
+      }
+
+      .back-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 14px;
+        border-radius: 6px;
+        background: #dfe3fb;
+        text-decoration: none;
+        color: #2e3ea8;
+        transition: 0.2s;
+      }
+
+      .back-btn:hover {
+        background: #cdd2fa;
       }
     </style>
   </head>
+
   <body>
-    <a class="back" href="/static/index.html">← Назад к графу</a>
+    <div class="container">
+      <h1 id="term-title">...</h1>
 
-    <div class="card">
-      <h1 id="title"></h1>
-      <p id="definition"></p>
+      <div id="definition" class="definition">...</div>
 
-      <h3>Связанные термины</h3>
+      <div class="section-title">Источники</div>
+      <ul id="sources" class="sources"></ul>
+
+      <div class="section-title">Связанные термины</div>
       <div id="related" class="related"></div>
 
-      <h3>Источники</h3>
-      <ul id="sources"></ul>
+      <a href="/static/index.html" class="back-btn">← Назад к графу</a>
     </div>
 
     <script>
-      const id = window.location.pathname.split("/").pop();
+      const termId = window.location.pathname.split("/").pop();
 
-      fetch(`/api/terms/${id}`)
-        .then((res) => res.json())
-        .then((data) => {
-          document.getElementById("title").textContent = data.term;
-          document.getElementById("definition").textContent = data.definition;
+      fetch(`/api/terms/${termId}`)
+        .then((r) => r.json())
+        .then((term) => {
+          document.getElementById("term-title").textContent = term.term;
+          document.getElementById("definition").textContent = term.definition;
 
-          const sources = JSON.parse(data.sources || "[]");
-          const ul = document.getElementById("sources");
-          sources.forEach((s) => {
-            const li = document.createElement("li");
-            li.innerHTML = `<a href="${s}" target="_blank">${s}</a>`;
-            ul.appendChild(li);
-          });
+          let sourcesList = document.getElementById("sources");
+          let sources = [];
+          try {
+            sources = JSON.parse(term.sources || "[]");
+          } catch {}
+          sourcesList.innerHTML = sources.map((s) => `<li>${s}</li>`).join("");
 
-          const related = JSON.parse(data.related_terms || "[]");
-          const rContainer = document.getElementById("related");
-          related.forEach((id) => {
-            const a = document.createElement("a");
-            a.href = `/term/${id}`;
-            a.textContent = `Термин #${id}`;
-            rContainer.appendChild(a);
-          });
+          fetch("/api/terms")
+            .then((r) => r.json())
+            .then((all) => {
+              const relatedDiv = document.getElementById("related");
+              let ids = [];
+
+              try {
+                ids = JSON.parse(term.related_terms || "[]");
+              } catch {}
+
+              ids.forEach((id) => {
+                const rt = all.find((t) => t.id === id);
+                if (rt) {
+                  let link = document.createElement("a");
+                  link.href = `/term/${rt.id}`;
+                  link.textContent = rt.term;
+                  relatedDiv.appendChild(link);
+                }
+              });
+            });
         });
     </script>
   </body>
